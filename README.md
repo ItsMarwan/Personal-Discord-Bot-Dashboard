@@ -293,12 +293,6 @@ discord-dashboard-bot/
 
 ## 🎨 Customization
 
-### Change Color Scheme
-Edit `styles/Dashboard.module.css` and modify the gradient:
-```css
-background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-```
-
 ### Add More Features
 The bot API (`src/bot/index.js`) is built with Express, making it easy to add new endpoints.
 
