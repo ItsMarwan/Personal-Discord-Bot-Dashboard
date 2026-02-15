@@ -1,0 +1,27 @@
+{
+  "name": "discord-dashboard-bot",
+  "version": "1.0.0",
+  "description": "Discord bot with web dashboard for moderation and management",
+  "main": "src/bot/index.js",
+  "scripts": {
+    "validate": "node validate-setup.js",
+    "dev": "concurrently \"node src/bot/index.js\" \"next dev\"",
+    "bot": "node src/bot/index.js",
+    "web": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "next": "^14.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "axios": "^1.6.5",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.1"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
