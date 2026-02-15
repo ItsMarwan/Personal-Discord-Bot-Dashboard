@@ -372,6 +372,250 @@ app.post('/api/presence', authenticate, async (req, res) => {
   }
 });
 
+// === NEW FEATURES ===
+
+// Server Statistics
+app.get('/api/stats', authenticate, async (req, res) => {
+  try {
+    const guild = await getGuildWithMembers();
+    if (!guild) return res.status(404).json({ error: 'Guild not found' });
+
+    const roles = guild.roles.cache.size;
+    const textChannels = guild.channels.cache.filter(c => c.type === 0).size;
+    const voiceChannels = guild.channels.cache.filter(c => c.type === 2).size;
+    const categories = guild.channels.cache.filter(c => c.type === 4).size;
+    const onlineMembers = guild.members.cache.filter(m => m.presence?.status === 'online').size;
+    const bots = guild.members.cache.filter(m => m.user.bot).size;
+    const humans = guild.memberCount - bots;
+
+    res.json({
+      members: {
+        total: guild.memberCount,
+        humans,
+        bots,
+        online: onlineMembers
+      },
+      channels: {
+        total: guild.channels.cache.size,
+        text: textChannels,
+        voice: voiceChannels,
+        categories
+      },
+      roles,
+      createdAt: guild.createdAt,
+      boostLevel: guild.premiumTier,
+      boostCount: guild.premiumSubscriptionCount
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Audit Log Viewer
+app.get('/api/audit-logs', authenticate, async (req, res) => {
+  try {
+    const guild = client.guilds.cache.get(process.env.GUILD_ID);
+    if (!guild) return res.status(404).json({ error: 'Guild not found' });
+
+    const logs = await guild.fetchAuditLogs({ limit: 50 });
+    
+    const formattedLogs = logs.entries.map(entry => ({
+      id: entry.id,
+      action: entry.action,
+      actionType: entry.actionType,
+      executor: {
+        id: entry.executor.id,
+        username: entry.executor.username,
+        avatar: entry.executor.displayAvatarURL()
+      },
+      target: entry.target ? {
+        id: entry.target.id,
+        name: entry.target.username || entry.target.name
+      } : null,
+      reason: entry.reason,
+      createdAt: entry.createdAt
+    }));
+
+    res.json(formattedLogs);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create Role
+app.post('/api/roles/create', authenticate, async (req, res) => {
+  try {
+    const { name, color, permissions } = req.body;
+    const guild = client.guilds.cache.get(process.env.GUILD_ID);
+    
+    const role = await guild.roles.create({
+      name,
+      color: color || '#99aab5',
+      permissions: permissions || []
+    });
+
+    res.json({ 
+      success: true, 
+      role: {
+        id: role.id,
+        name: role.name,
+        color: role.hexColor
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete Role
+app.delete('/api/roles/:roleId', authenticate, async (req, res) => {
+  try {
+    const { roleId } = req.params;
+    const guild = client.guilds.cache.get(process.env.GUILD_ID);
+    const role = guild.roles.cache.get(roleId);
+    
+    if (!role) return res.status(404).json({ error: 'Role not found' });
+    
+    await role.delete();
+    res.json({ success: true, message: 'Role deleted' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create Channel
+app.post('/api/channels/create', authenticate, async (req, res) => {
+  try {
+    const { name, type } = req.body;
+    const guild = client.guilds.cache.get(process.env.GUILD_ID);
+    
+    const channel = await guild.channels.create({
+      name,
+      type: type || 0 // 0 = text, 2 = voice
+    });
+
+    res.json({ 
+      success: true, 
+      channel: {
+        id: channel.id,
+        name: channel.name,
+        type: channel.type
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete Channel
+app.delete('/api/channels/:channelId', authenticate, async (req, res) => {
+  try {
+    const { channelId } = req.params;
+    const channel = client.channels.cache.get(channelId);
+    
+    if (!channel) return res.status(404).json({ error: 'Channel not found' });
+    
+    await channel.delete();
+    res.json({ success: true, message: 'Channel deleted' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Schedule Message
+let scheduledMessages = [];
+app.post('/api/schedule', authenticate, async (req, res) => {
+  try {
+    const { channelId, message, embed, scheduledTime } = req.body;
+    
+    const scheduleId = Date.now().toString();
+    const delay = new Date(scheduledTime).getTime() - Date.now();
+    
+    if (delay <= 0) {
+      return res.status(400).json({ error: 'Scheduled time must be in the future' });
+    }
+
+    const timeout = setTimeout(async () => {
+      try {
+        const channel = client.channels.cache.get(channelId);
+        if (channel) {
+          if (embed) {
+            const embedMessage = new EmbedBuilder()
+              .setTitle(embed.title || null)
+              .setDescription(embed.description || null)
+              .setColor(embed.color || '#0099ff');
+            await channel.send({ embeds: [embedMessage] });
+          } else {
+            await channel.send(message);
+          }
+        }
+        scheduledMessages = scheduledMessages.filter(sm => sm.id !== scheduleId);
+      } catch (error) {
+        console.error('Failed to send scheduled message:', error);
+      }
+    }, delay);
+
+    scheduledMessages.push({
+      id: scheduleId,
+      channelId,
+      message,
+      scheduledTime,
+      timeout
+    });
+
+    res.json({ 
+      success: true, 
+      scheduleId,
+      message: 'Message scheduled successfully' 
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get Scheduled Messages
+app.get('/api/schedule', authenticate, async (req, res) => {
+  try {
+    const schedules = scheduledMessages.map(({ id, channelId, message, scheduledTime }) => ({
+      id,
+      channelId,
+      message: message || 'Embed message',
+      scheduledTime
+    }));
+    res.json(schedules);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Cancel Scheduled Message
+app.delete('/api/schedule/:scheduleId', authenticate, async (req, res) => {
+  try {
+    const { scheduleId } = req.params;
+    const schedule = scheduledMessages.find(sm => sm.id === scheduleId);
+    
+    if (!schedule) {
+      return res.status(404).json({ error: 'Scheduled message not found' });
+    }
+
+    clearTimeout(schedule.timeout);
+    scheduledMessages = scheduledMessages.filter(sm => sm.id !== scheduleId);
+    
+    res.json({ success: true, message: 'Scheduled message cancelled' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Login to Discord
 client.login(process.env.DISCORD_BOT_TOKEN);
 

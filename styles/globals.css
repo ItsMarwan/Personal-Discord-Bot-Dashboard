@@ -769,3 +769,516 @@ body {
     top: 16px;
   }
 }
+
+/* === DARK MODE === */
+.theme-dark {
+  background: #000;
+  color: #fff;
+}
+
+.theme-dark body {
+  background: #000;
+}
+
+.theme-dark .login-page {
+  background: #000;
+}
+
+.theme-dark .login-card {
+  background: #111;
+  border-color: #222;
+}
+
+.theme-dark .login-header h1,
+.theme-dark .panel-header h2,
+.theme-dark .form-label,
+.theme-dark .checkbox-label,
+.theme-dark .server-info h1,
+.theme-dark .section-title,
+.theme-dark .embed-title {
+  color: #fff;
+}
+
+.theme-dark .login-header p,
+.theme-dark .panel-header p,
+.theme-dark .server-info p {
+  color: #888;
+}
+
+.theme-dark .dashboard,
+.theme-dark .content {
+  background: #000;
+}
+
+.theme-dark .header,
+.theme-dark .tabs,
+.theme-dark .panel {
+  background: #111;
+  border-color: #222;
+}
+
+.theme-dark .tab {
+  color: #888;
+}
+
+.theme-dark .tab:hover,
+.theme-dark .tab.active {
+  color: #fff;
+}
+
+.theme-dark .tab.active {
+  border-bottom-color: #fff;
+}
+
+.theme-dark .custom-input,
+.theme-dark .select-trigger {
+  background: #000;
+  border-color: #333;
+  color: #fff;
+}
+
+.theme-dark .custom-input:hover,
+.theme-dark .select-trigger:hover {
+  border-color: #fff;
+}
+
+.theme-dark .custom-input:focus {
+  border-color: #fff;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+.theme-dark .select-dropdown,
+.theme-dark .color-picker-dropdown {
+  background: #111;
+  border-color: #222;
+}
+
+.theme-dark .select-option {
+  color: #fff;
+}
+
+.theme-dark .select-option:hover,
+.theme-dark .select-option.selected {
+  background: #222;
+}
+
+.theme-dark .checkbox-box {
+  border-color: #333;
+}
+
+.theme-dark .custom-checkbox:hover .checkbox-box {
+  border-color: #fff;
+}
+
+.theme-dark .custom-checkbox input:checked + .checkbox-box {
+  background: #fff;
+  border-color: #fff;
+}
+
+.theme-dark .checkbox-icon {
+  color: #000;
+}
+
+.theme-dark .custom-button.primary {
+  background: #fff;
+  color: #000;
+}
+
+.theme-dark .custom-button.primary:hover:not(:disabled) {
+  background: #ddd;
+}
+
+.theme-dark .custom-button.secondary {
+  background: #000;
+  color: #fff;
+  border-color: #333;
+}
+
+.theme-dark .custom-button.secondary:hover:not(:disabled) {
+  border-color: #fff;
+}
+
+.theme-dark .embed-builder,
+.theme-dark .user-selection,
+.theme-dark .presence-preview {
+  background: #000;
+  border-color: #222;
+}
+
+.theme-dark .embed-field,
+.theme-dark .color-picker-dropdown {
+  background: #111;
+  border-color: #222;
+}
+
+.theme-dark .divider {
+  background: #222;
+}
+
+.theme-dark .user-item {
+  border-bottom-color: #222;
+}
+
+.theme-dark .selection-count {
+  background: #fff;
+  color: #000;
+}
+
+.theme-dark .notification {
+  background: #fff;
+  color: #000;
+}
+
+.theme-dark .notification.error {
+  background: #ef4444;
+  color: #fff;
+}
+
+.theme-dark .notification.success {
+  background: #10b981;
+  color: #fff;
+}
+
+.theme-dark .logo,
+.theme-dark .logo-small {
+  background: #fff;
+  color: #000;
+}
+
+.theme-dark .color-swatch {
+  border-color: #333;
+}
+
+.theme-dark .color-option {
+  border-color: #333;
+}
+
+/* === NEW FEATURES STYLES === */
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.theme-toggle {
+  background: none;
+  border: 1px solid #d4d4d4;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #000;
+}
+
+.theme-toggle:hover {
+  border-color: #000;
+  background: #fafafa;
+}
+
+.theme-dark .theme-toggle {
+  border-color: #333;
+  color: #fff;
+}
+
+.theme-dark .theme-toggle:hover {
+  border-color: #fff;
+  background: #222;
+}
+
+.scheduled-list {
+  margin-top: 32px;
+}
+
+.scheduled-item {
+  background: #fafafa;
+  border: 1px solid #eaeaea;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  animation: slideUp 0.2s ease-out;
+}
+
+.theme-dark .scheduled-item {
+  background: #000;
+  border-color: #222;
+}
+
+.scheduled-message {
+  font-size: 14px;
+  color: #000;
+  margin-bottom: 4px;
+}
+
+.theme-dark .scheduled-message {
+  color: #fff;
+}
+
+.scheduled-time {
+  font-size: 12px;
+  color: #666;
+}
+
+.theme-dark .scheduled-time {
+  color: #888;
+}
+
+.role-list,
+.channel-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.role-item,
+.channel-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid #eaeaea;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.theme-dark .role-item,
+.theme-dark .channel-item {
+  border-bottom-color: #222;
+}
+
+.role-item:last-child,
+.channel-item:last-child {
+  border-bottom: none;
+}
+
+.role-info,
+.channel-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.role-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+.channel-icon {
+  font-size: 18px;
+}
+
+.role-name,
+.channel-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #000;
+}
+
+.theme-dark .role-name,
+.theme-dark .channel-name {
+  color: #fff;
+}
+
+.audit-logs {
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.audit-log-item {
+  background: #fafafa;
+  border: 1px solid #eaeaea;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 12px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.theme-dark .audit-log-item {
+  background: #000;
+  border-color: #222;
+}
+
+.audit-executor {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.audit-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.audit-username {
+  font-size: 14px;
+  font-weight: 600;
+  color: #000;
+}
+
+.theme-dark .audit-username {
+  color: #fff;
+}
+
+.audit-time {
+  font-size: 12px;
+  color: #666;
+}
+
+.theme-dark .audit-time {
+  color: #888;
+}
+
+.audit-action {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: #666;
+}
+
+.theme-dark .audit-action {
+  color: #888;
+}
+
+.audit-action-type {
+  font-weight: 500;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  background: #fafafa;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  padding: 24px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.theme-dark .stat-card {
+  background: #000;
+  border-color: #222;
+}
+
+.stat-card.full-width {
+  grid-column: 1 / -1;
+}
+
+.stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.theme-dark .stat-label {
+  color: #888;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 4px;
+}
+
+.theme-dark .stat-value {
+  color: #fff;
+}
+
+.stat-detail {
+  font-size: 13px;
+  color: #666;
+}
+
+.theme-dark .stat-detail {
+  color: #888;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+  font-size: 14px;
+}
+
+.theme-dark .empty-state {
+  color: #888;
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .header-actions {
+    gap: 8px;
+  }
+  
+  .theme-toggle {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* === CUSTOM SCROLLBARS === */
+
+/* Light theme scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #d4d4d4 transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* Dark theme scrollbars */
+.theme-dark * {
+  scrollbar-color: #333 transparent;
+}
+
+.theme-dark *::-webkit-scrollbar-thumb {
+  background: #333;
+}
+
+.theme-dark *::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Hide scrollbars completely (optional) */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}

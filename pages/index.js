@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import Head from 'next/head';
 import { CustomCheckbox, CustomSelect, CustomInput, Button, ColorPicker } from '../components/CustomUI';
+import { SchedulePanel, RoleManagementPanel, ChannelManagementPanel, AuditLogsPanel, StatsPanel } from '../components/FeaturePanels';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function Dashboard() {
+  const { isDark, toggleTheme } = useTheme();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [guild, setGuild] = useState(null);
@@ -34,6 +37,18 @@ export default function Dashboard() {
   const [activityType, setActivityType] = useState('Playing');
   const [activityName, setActivityName] = useState('');
 
+  // New feature states
+  const [stats, setStats] = useState(null);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [scheduledMessages, setScheduledMessages] = useState([]);
+  const [newRoleName, setNewRoleName] = useState('');
+  const [newRoleColor, setNewRoleColor] = useState('#99aab5');
+  const [newChannelName, setNewChannelName] = useState('');
+  const [newChannelType, setNewChannelType] = useState('0');
+  const [scheduleChannelId, setScheduleChannelId] = useState('');
+  const [scheduleMessage, setScheduleMessage] = useState('');
+  const [scheduleTime, setScheduleTime] = useState('');
+
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 4000);
@@ -57,6 +72,10 @@ export default function Dashboard() {
       return data;
     } catch (error) {
       console.error('API Request failed:', error);
+      // Show user-friendly message
+      if (error.message.includes('Failed to connect')) {
+        showNotification('Bot is not running. Start it with: npm run bot', 'error');
+      }
       throw error;
     }
   };
@@ -92,6 +111,34 @@ export default function Dashboard() {
       setRoles(rolesData);
     } catch (error) {
       showNotification('Failed to load data', 'error');
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      const data = await apiRequest('/api/stats');
+      setStats(data);
+    } catch (error) {
+      // Only show error if user intentionally tried to load stats
+      console.error('Failed to load stats:', error);
+    }
+  };
+
+  const loadAuditLogs = async () => {
+    try {
+      const data = await apiRequest('/api/audit-logs');
+      setAuditLogs(data);
+    } catch (error) {
+      console.error('Failed to load audit logs:', error);
+    }
+  };
+
+  const loadScheduledMessages = async () => {
+    try {
+      const data = await apiRequest('/api/schedule');
+      setScheduledMessages(data);
+    } catch (error) {
+      console.error('Failed to load scheduled messages:', error);
     }
   };
 
@@ -222,6 +269,102 @@ export default function Dashboard() {
     }
   };
 
+  const createRole = async () => {
+    if (!newRoleName) return showNotification('Please enter a role name', 'error');
+    setLoading(true);
+    try {
+      await apiRequest('/api/roles/create', 'POST', { name: newRoleName, color: newRoleColor });
+      showNotification('Role created successfully!');
+      setNewRoleName('');
+      setNewRoleColor('#99aab5');
+      loadData();
+    } catch (error) {
+      showNotification('Failed to create role', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteRole = async (roleId) => {
+    if (!confirm('Are you sure you want to delete this role?')) return;
+    setLoading(true);
+    try {
+      await apiRequest(`/api/roles/${roleId}`, 'DELETE');
+      showNotification('Role deleted!');
+      loadData();
+    } catch (error) {
+      showNotification('Failed to delete role', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createChannel = async () => {
+    if (!newChannelName) return showNotification('Please enter a channel name', 'error');
+    setLoading(true);
+    try {
+      await apiRequest('/api/channels/create', 'POST', { name: newChannelName, type: parseInt(newChannelType) });
+      showNotification('Channel created successfully!');
+      setNewChannelName('');
+      loadData();
+    } catch (error) {
+      showNotification('Failed to create channel', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteChannel = async (channelId) => {
+    if (!confirm('Are you sure you want to delete this channel?')) return;
+    setLoading(true);
+    try {
+      await apiRequest(`/api/channels/${channelId}`, 'DELETE');
+      showNotification('Channel deleted!');
+      loadData();
+    } catch (error) {
+      showNotification('Failed to delete channel', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const scheduleMessageAction = async () => {
+    if (!scheduleChannelId) return showNotification('Please select a channel', 'error');
+    if (!scheduleMessage) return showNotification('Please enter a message', 'error');
+    if (!scheduleTime) return showNotification('Please select a time', 'error');
+    
+    setLoading(true);
+    try {
+      await apiRequest('/api/schedule', 'POST', {
+        channelId: scheduleChannelId,
+        message: scheduleMessage,
+        scheduledTime: scheduleTime
+      });
+      showNotification('Message scheduled!');
+      setScheduleChannelId('');
+      setScheduleMessage('');
+      setScheduleTime('');
+      loadScheduledMessages();
+    } catch (error) {
+      showNotification('Failed to schedule message', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const cancelScheduledMessage = async (scheduleId) => {
+    setLoading(true);
+    try {
+      await apiRequest(`/api/schedule/${scheduleId}`, 'DELETE');
+      showNotification('Scheduled message cancelled!');
+      loadScheduledMessages();
+    } catch (error) {
+      showNotification('Failed to cancel message', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const addEmbedField = (type) => {
     if (type === 'dm') {
       setDmEmbed({ ...dmEmbed, fields: [...dmEmbed.fields, { name: '', value: '', inline: false }] });
@@ -327,22 +470,48 @@ export default function Dashboard() {
               <p>{guild?.memberCount} members</p>
             </div>
           </div>
-          <Button variant="secondary" onClick={() => setIsLoggedIn(false)}>Sign Out</Button>
+          <div className="header-actions">
+            <button className="theme-toggle" onClick={toggleTheme} title="Toggle theme">
+              {isDark ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </button>
+            <Button variant="secondary" onClick={() => setIsLoggedIn(false)}>Sign Out</Button>
+          </div>
         </div>
       </header>
 
       <nav className="tabs">
-        {['dm', 'channel', 'moderation', 'bulk', 'presence'].map(tab => (
+        {[
+          { id: 'dm', label: 'Direct Messages' },
+          { id: 'channel', label: 'Channel Messages' },
+          { id: 'schedule', label: 'Schedule Messages' },
+          { id: 'moderation', label: 'Moderation' },
+          { id: 'bulk', label: 'Bulk Operations' },
+          { id: 'roles', label: 'Role Management' },
+          { id: 'channels', label: 'Channel Management' },
+          { id: 'audit', label: 'Audit Logs' },
+          { id: 'stats', label: 'Server Stats' },
+          { id: 'presence', label: 'Bot Presence' }
+        ].map(tab => (
           <button 
-            key={tab}
-            className={`tab ${activeTab === tab ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab)}
+            key={tab.id}
+            className={`tab ${activeTab === tab.id ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab(tab.id);
+              // Only load data when user clicks the tab
+              if (tab.id === 'stats' && !stats) loadStats();
+              if (tab.id === 'audit' && auditLogs.length === 0) loadAuditLogs();
+              if (tab.id === 'schedule' && scheduledMessages.length === 0) loadScheduledMessages();
+            }}
           >
-            {tab === 'dm' && 'Direct Messages'}
-            {tab === 'channel' && 'Channel Messages'}
-            {tab === 'moderation' && 'Moderation'}
-            {tab === 'bulk' && 'Bulk Operations'}
-            {tab === 'presence' && 'Bot Presence'}
+            {tab.label}
           </button>
         ))}
       </nav>
@@ -675,6 +844,56 @@ export default function Dashboard() {
               </div>
             )}
           </div>
+        )}
+
+        {activeTab === 'schedule' && (
+          <SchedulePanel
+            channels={channels}
+            scheduleChannelId={scheduleChannelId}
+            setScheduleChannelId={setScheduleChannelId}
+            scheduleMessage={scheduleMessage}
+            setScheduleMessage={setScheduleMessage}
+            scheduleTime={scheduleTime}
+            setScheduleTime={setScheduleTime}
+            scheduleMessageAction={scheduleMessageAction}
+            loading={loading}
+            scheduledMessages={scheduledMessages}
+            cancelScheduledMessage={cancelScheduledMessage}
+          />
+        )}
+
+        {activeTab === 'roles' && (
+          <RoleManagementPanel
+            roles={roles}
+            newRoleName={newRoleName}
+            setNewRoleName={setNewRoleName}
+            newRoleColor={newRoleColor}
+            setNewRoleColor={setNewRoleColor}
+            createRole={createRole}
+            deleteRole={deleteRole}
+            loading={loading}
+          />
+        )}
+
+        {activeTab === 'channels' && (
+          <ChannelManagementPanel
+            channels={channels}
+            newChannelName={newChannelName}
+            setNewChannelName={setNewChannelName}
+            newChannelType={newChannelType}
+            setNewChannelType={setNewChannelType}
+            createChannel={createChannel}
+            deleteChannel={deleteChannel}
+            loading={loading}
+          />
+        )}
+
+        {activeTab === 'audit' && (
+          <AuditLogsPanel auditLogs={auditLogs} />
+        )}
+
+        {activeTab === 'stats' && (
+          <StatsPanel stats={stats} />
         )}
       </main>
     </div>

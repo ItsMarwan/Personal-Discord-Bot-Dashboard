@@ -145,7 +145,7 @@ npm run web
 **⚡ Performance Note:**
 The bot caches member data for 30 seconds to avoid Discord rate limits. If you add/remove members, changes will appear within 30 seconds.
 
-## 🌐 Deploying to Vercel (itsmarwan-blueplanet.vercel.app)
+## 🌐 Deploying to Vercel
 
 ### Dashboard Deployment
 
@@ -156,7 +156,6 @@ The bot caches member data for 30 seconds to avoid Discord rate limits. If you a
 2. **Deploy to Vercel:**
    - Go to [vercel.com](https://vercel.com)
    - Import your GitHub repository
-   - Set custom domain to: `itsmarwan-blueplanet.vercel.app`
    - Add environment variables in Vercel dashboard:
      ```
      NEXT_PUBLIC_API_URL=https://your-bot-api-url.com
@@ -164,7 +163,8 @@ The bot caches member data for 30 seconds to avoid Discord rate limits. If you a
 
 3. **Bot Hosting:**
    The Discord bot needs to run 24/7 separately. Host it on:
-   - **Railway** (recommended): https://railway.app
+   - **Railway**: https://railway.app
+   - **Bot Hosting.Net** (recommended + 100% FREE): https://bot-hosting.net/
    - **Heroku**: https://heroku.com
    - **DigitalOcean**: https://digitalocean.com
    - **AWS EC2**: https://aws.amazon.com/ec2
@@ -324,13 +324,13 @@ If you encounter issues:
 
 ## 🌟 Features Coming Soon
 
-- [ ] Message scheduling
-- [ ] Advanced logging
-- [ ] Role management
-- [ ] Channel management
-- [ ] Audit log viewer
+- [x] Message scheduling
+- [x] Advanced logging
+- [x] Role management
+- [x] Channel management
+- [x] Audit log viewer
 - [ ] Custom commands
-- [ ] Server statistics
+- [x] Server statistics
 
 ---
 
