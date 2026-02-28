@@ -4,7 +4,17 @@ A comprehensive Discord bot with a powerful web dashboard for server management.
 
 ## ✨ Features
 
-### 📬 DM Users
+### � DM Inbox (1:1 Messaging)
+- **Full Discord-like DM interface** for managing direct messages
+- View all conversations with server members
+- See message history (sent and received)
+- Track user responses in real-time
+- Search conversations by username
+- Message status indicators
+- Rich message formatting support
+- Auto-refresh for new messages
+
+### 📬 Send DM Messages
 - Send direct messages to any server member
 - Full embed builder with customizable:
   - Title, description, and color
@@ -12,11 +22,29 @@ A comprehensive Discord bot with a powerful web dashboard for server management.
   - Images and thumbnails
   - Custom fields (inline/non-inline)
 - Plain text or rich embed messages
+- Schedule messages with working date/time picker
+- Message delivery confirmation
 
 ### 📢 Channel Messages
 - Send messages to any text channel
 - Same powerful embed builder as DM feature
 - Schedule announcements and updates
+- Fixed date/time picker for accurate scheduling
+- Preview scheduled messages
+
+### ⚙️ Custom Command Creator
+- **Create custom slash commands** with full customization:
+  - Command name and description
+  - Multiple option types (String, Integer, Boolean, User, Role, Channel)
+  - Required/optional parameters
+  - Command response type (Plain text or Embed)
+  - Embed customization (title, description, color, fields, images)
+  - Auto-complete suggestions for options
+- **View all registered commands** with edit/delete functionality
+- **Live slash command registration** to Discord
+- Command usage tracking
+- Reorder command options with drag-and-drop
+- Clone commands for quick duplication
 
 ### 🔨 Moderation Tools
 - **Kick** users with optional reason
@@ -29,12 +57,19 @@ A comprehensive Discord bot with a powerful web dashboard for server management.
 - **Bulk Kick**: Remove multiple users simultaneously
 - Select users with checkbox interface
 - Confirmation prompts for safety
+- Improved UI layout with proper spacing
 
 ### 🎮 Bot Presence Management
 - Set bot status (Online, Idle, DND, Invisible)
 - Configure activity type (Playing, Streaming, Listening, Watching, Competing)
 - Custom activity name
 - Live preview of changes
+
+### 🎨 Enhanced UI Components
+- **Improved Color Picker**: Circular color selector with smooth dragging
+- **Searchable Dropdowns**: Full search functionality in all dropdown menus
+- **Fixed Layouts**: Proper spacing and responsive design
+- **Date/Time Selector**: Fully functional scheduling picker
 
 ## 🚀 Setup Instructions
 
@@ -201,36 +236,101 @@ DASHBOARD_PASSWORD=your_secure_password
 2. Enter your username and password (from .env file)
 3. You'll see your server info at the top
 
-### DM Users Tab
-1. Select a user from the dropdown
+### DM Inbox Tab (1:1 Messaging)
+1. **View Conversations**:
+   - See list of all members you've messaged or who've messaged you
+   - Search conversations by username (fully searchable)
+   - Click on a conversation to open the chat thread
+
+2. **Message History**:
+   - View all messages sent and received
+   - See timestamps and message status
+   - Full embed and attachment support displayed
+
+3. **Track Responses**:
+   - See which messages received replies
+   - Response indicators show user engagement
+   - Auto-refresh for new incoming messages
+
+### Send DM Tab
+1. Select a user from the dropdown (searchable)
 2. Choose between plain message or embed
 3. If using embed:
    - Add title, description
-   - Choose color
+   - Choose color with improved color picker (drag the circle to select)
    - Add footer, images
    - Add custom fields
-4. Click "Send DM"
+4. **Optional: Schedule message**:
+   - Click "Schedule Message" checkbox
+   - Use the date picker to select date
+   - Use the time picker to select time
+   - Click "Schedule DM"
+5. Or click "Send DM" to send immediately
+
+### Custom Commands Tab
+1. **Create New Command**:
+   - Enter command name (no spaces)
+   - Add description for the command
+   - Choose response type (Plain Text or Embed)
+   
+2. **Add Options/Parameters**:
+   - Click "Add Option"
+   - Choose option type:
+     - String: Text input
+     - Integer: Numeric input
+     - Boolean: True/False toggle
+     - User: Select a server member
+     - Role: Select a server role
+     - Channel: Select a channel
+   - Set option name and description
+   - Mark as Required or Optional
+   - Add auto-complete suggestions (optional)
+   - Drag to reorder options
+
+3. **Build Response**:
+   - If Plain Text: Enter response message
+   - If Embed: Use full embed builder (title, description, color, fields, images)
+
+4. **Register Command**:
+   - Click "Create Command"
+   - Command instantly registers as Discord slash command
+   - Appears in Discord as `/commandname`
+
+5. **Manage Commands**:
+   - View all registered custom commands
+   - Edit existing commands
+   - Delete commands
+   - Clone commands for faster creation
 
 ### Channel Messages Tab
-1. Select a channel from the dropdown
+1. Select a channel from the dropdown (searchable)
 2. Compose message or build embed (same as DM)
-3. Click "Send Message"
+3. **Optional: Schedule message**:
+   - Use working date and time pickers
+   - Preview scheduled message
+4. Click "Send Message" to send immediately
 
 ### Moderation Tab
-1. Select user to moderate
+1. Select user to moderate (searchable dropdown)
 2. Enter reason (optional)
 3. Choose action:
    - Kick (removes from server)
    - Ban (permanent removal)
    - Timeout (temporary mute)
+4. Confirm the action
 
 ### Bulk Operations Tab
-1. Select multiple users using checkboxes
-2. **For bulk role add:**
+1. **Select Multiple Users**:
+   - Use checkboxes to select users
+   - Select All / Deselect All options available
+   
+2. **For Bulk Role Add**:
    - Choose role from dropdown
    - Click "Add Role to Selected Users"
-3. **For bulk kick:**
-   - Enter reason
+   - Confirm action
+
+3. **For Bulk Kick**:
+   - Enter reason (optional)
    - Click "Kick Selected Users"
    - Confirm the action
 
@@ -251,6 +351,14 @@ DASHBOARD_PASSWORD=your_secure_password
 
 ## 🛠️ Troubleshooting
 
+### Fixed Issues in Latest Update
+
+- ✅ **Dropdown Search**: All dropdown menus now support full text search functionality
+- ✅ **Schedule Date/Time Picker**: Fixed and fully functional for scheduling messages
+- ✅ **Bulk Operations Layout**: Removed unnecessary white space, improved UI spacing
+- ✅ **Color Picker**: Enhanced with circular selector and smooth drag-to-pick functionality
+- ✅ **DM Message Tracking**: Now fetches and displays all sent/received messages with response indicators
+
 ### Bot won't start
 - Check if bot token is correct
 - Verify Privileged Gateway Intents are enabled
@@ -270,6 +378,13 @@ DASHBOARD_PASSWORD=your_secure_password
 - Check if bot API is running
 - Verify `NEXT_PUBLIC_API_URL` is correct
 - Check credentials match in bot and dashboard
+
+### Custom Commands
+- Commands must have unique names
+- Command names cannot contain spaces (automatically converted to lowercase)
+- Options must have descriptive names and descriptions
+- Ensure bot has "applications.commands" scope in OAuth2 settings
+- Commands appear instantly in Discord after registration
 
 ## 📦 Project Structure
 
@@ -292,6 +407,37 @@ discord-dashboard-bot/
 ```
 
 ## 🎨 Customization
+
+### Custom Commands Builder - Advanced Features
+
+The custom command creator offers extensive customization:
+
+#### Command Options
+- **String Options**: Free text input with optional auto-complete suggestions
+- **Integer Options**: Numeric input with min/max value constraints
+- **Boolean Options**: True/False toggles for conditional command behavior
+- **User Options**: Select any server member for user-targeted commands
+- **Role Options**: Select server roles for role-based operations
+- **Channel Options**: Select specific channels for channel-related commands
+
+#### Response Customization
+- **Plain Text Responses**: Simple text messages with variable substitution
+- **Embed Responses**: 
+  - Customizable title and description
+  - Full color picker with visual preview
+  - Footer text with optional timestamp
+  - Add multiple custom fields (inline or full-width)
+  - Image and thumbnail support
+  - Author information
+  - Dynamic fields based on command options
+
+#### Command Organization
+- Drag-and-drop option reordering
+- Clone existing commands to save time
+- Edit command responses without re-registering
+- Bulk delete commands
+- Search through registered commands
+- Command usage analytics
 
 ### Add More Features
 The bot API (`src/bot/index.js`) is built with Express, making it easy to add new endpoints.
@@ -316,15 +462,26 @@ If you encounter issues:
 3. Check bot permissions in Discord
 4. Review console logs for error messages
 
-## 🌟 Features Coming Soon
+## 🌟 Recently Added
 
-- [x] Message scheduling
-- [x] Advanced logging
-- [x] Role management
-- [x] Channel management
-- [x] Audit log viewer
-- [ ] Custom commands
-- [x] Server statistics
+- [x] Custom slash command creator with full customization
+- [x] 1:1 Discord-like DM inbox interface
+- [x] Message tracking and response indicators
+- [x] Searchable dropdown menus throughout dashboard
+- [x] Fixed date/time scheduling picker
+- [x] Improved color picker with drag-to-select
+- [x] Enhanced bulk operations UI
+- [x] Message scheduling for DMs and channel messages
+
+## 🔮 Features Coming Soon
+
+- [ ] Custom command event triggers
+- [ ] Message reactions and emoji support
+- [ ] Advanced logging and audit trails
+- [ ] Server statistics and analytics dashboard
+- [ ] Role hierarchy management
+- [ ] Channel permission editor
+- [ ] Automated moderation rules
 
 ---
 

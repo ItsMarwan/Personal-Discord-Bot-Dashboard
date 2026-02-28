@@ -528,6 +528,230 @@ app.delete('/api/channels/:channelId', authenticate, async (req, res) => {
   }
 });
 
+// === DM TRACKING ===
+// Storage for tracked DMs
+let dmConversations = {};
+
+// Track incoming DMs
+client.on('messageCreate', async (message) => {
+  if (message.author.bot || !message.guild) return;
+  if (message.channel.isDMBased()) {
+    const userId = message.author.id;
+    if (!dmConversations[userId]) {
+      dmConversations[userId] = [];
+    }
+    dmConversations[userId].push({
+      type: 'received',
+      content: message.content,
+      timestamp: new Date(message.createdTimestamp),
+      authorId: userId,
+      authorName: message.author.username
+    });
+  }
+});
+
+// Get DM conversations
+app.get('/api/dm-inbox', authenticate, async (req, res) => {
+  try {
+    const conversations = Object.entries(dmConversations).map(([userId, messages]) => ({
+      userId,
+      messageCount: messages.length,
+      lastMessage: messages[messages.length - 1]?.content || '',
+      lastMessageTime: messages[messages.length - 1]?.timestamp || null,
+      hasUnread: messages.some(m => m.type === 'received')
+    }));
+    res.json(conversations);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get specific conversation
+app.get('/api/dm-inbox/:userId', authenticate, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const messages = dmConversations[userId] || [];
+    res.json(messages);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// === CUSTOM COMMANDS ===
+let customCommands = {};
+
+// Create custom command
+app.post('/api/commands/create', authenticate, async (req, res) => {
+  try {
+    const { name, description, options, responseType, response } = req.body;
+    const commandName = name.toLowerCase().replace(/\s+/g, '');
+    
+    if (customCommands[commandName]) {
+      return res.status(400).json({ error: 'Command with this name already exists' });
+    }
+
+    const commandData = {
+      name: commandName,
+      description,
+      options: options || [],
+      responseType: responseType || 'plain',
+      response: response || '',
+      createdAt: new Date()
+    };
+
+    customCommands[commandName] = commandData;
+
+    // Register as Discord slash command
+    try {
+      const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_BOT_TOKEN);
+      const guild = client.guilds.cache.get(process.env.GUILD_ID);
+      
+      const slashCommandData = {
+        name: commandName,
+        description: description || 'Custom command',
+        options: options.map(opt => ({
+          name: opt.name.toLowerCase(),
+          description: opt.description || 'Option',
+          type: optionTypeMap[opt.type] || 3,
+          required: opt.required || false,
+          autocomplete: opt.autocomplete || false
+        }))
+      };
+
+      await rest.post(
+        Routes.applicationGuildCommands(client.user.id, guild.id),
+        { body: [slashCommandData] }
+      );
+    } catch (error) {
+      console.error('Failed to register slash command:', error);
+    }
+
+    res.json({ success: true, command: commandData });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all custom commands
+app.get('/api/commands', authenticate, async (req, res) => {
+  try {
+    const commands = Object.values(customCommands).map(cmd => ({
+      name: cmd.name,
+      description: cmd.description,
+      optionCount: cmd.options.length,
+      responseType: cmd.responseType,
+      createdAt: cmd.createdAt
+    }));
+    res.json(commands);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get specific command
+app.get('/api/commands/:name', authenticate, async (req, res) => {
+  try {
+    const { name } = req.params;
+    const command = customCommands[name.toLowerCase()];
+    if (!command) {
+      return res.status(404).json({ error: 'Command not found' });
+    }
+    res.json(command);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update custom command
+app.put('/api/commands/:name', authenticate, async (req, res) => {
+  try {
+    const { name } = req.params;
+    const { description, options, responseType, response } = req.body;
+    const commandName = name.toLowerCase();
+    
+    if (!customCommands[commandName]) {
+      return res.status(404).json({ error: 'Command not found' });
+    }
+
+    customCommands[commandName] = {
+      ...customCommands[commandName],
+      description: description || customCommands[commandName].description,
+      options: options || customCommands[commandName].options,
+      responseType: responseType || customCommands[commandName].responseType,
+      response: response || customCommands[commandName].response,
+      updatedAt: new Date()
+    };
+
+    res.json({ success: true, command: customCommands[commandName] });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete custom command
+app.delete('/api/commands/:name', authenticate, async (req, res) => {
+  try {
+    const { name } = req.params;
+    const commandName = name.toLowerCase();
+    
+    if (!customCommands[commandName]) {
+      return res.status(404).json({ error: 'Command not found' });
+    }
+
+    delete customCommands[commandName];
+    res.json({ success: true, message: 'Command deleted' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Option type mapping for Discord
+const optionTypeMap = {
+  'String': 3,
+  'Integer': 4,
+  'Boolean': 5,
+  'User': 9,
+  'Role': 8,
+  'Channel': 7
+};
+
+// Handle custom slash commands
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isChatInputCommand()) return;
+  
+  const command = customCommands[interaction.commandName];
+  if (!command) return;
+
+  try {
+    if (command.responseType === 'embed') {
+      const embed = new EmbedBuilder()
+        .setTitle(command.response.title || 'Response')
+        .setDescription(command.response.description || '')
+        .setColor(command.response.color || '#0099ff');
+      
+      if (command.response.footer) embed.setFooter({ text: command.response.footer });
+      if (command.response.image) embed.setImage(command.response.image);
+      if (command.response.fields) {
+        embed.addFields(command.response.fields);
+      }
+
+      await interaction.reply({ embeds: [embed] });
+    } else {
+      await interaction.reply(command.response || 'Command executed');
+    }
+  } catch (error) {
+    console.error('Error executing custom command:', error);
+    await interaction.reply({ content: 'An error occurred', ephemeral: true });
+  }
+});
+
 // Schedule Message
 let scheduledMessages = [];
 app.post('/api/schedule', authenticate, async (req, res) => {

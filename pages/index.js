@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Head from 'next/head';
 import { CustomCheckbox, CustomSelect, CustomInput, Button, ColorPicker } from '../components/CustomUI';
-import { SchedulePanel, RoleManagementPanel, ChannelManagementPanel, AuditLogsPanel, StatsPanel } from '../components/FeaturePanels';
+import { SchedulePanel, RoleManagementPanel, ChannelManagementPanel, AuditLogsPanel, StatsPanel, CustomCommandsPanel } from '../components/FeaturePanels';
 import { useTheme } from '../contexts/ThemeContext';
 
 export default function Dashboard() {
@@ -48,6 +48,11 @@ export default function Dashboard() {
   const [scheduleChannelId, setScheduleChannelId] = useState('');
   const [scheduleMessage, setScheduleMessage] = useState('');
   const [scheduleTime, setScheduleTime] = useState('');
+
+  // Custom Commands states
+  const [customCommands, setCustomCommands] = useState([]);
+  const [newCommand, setNewCommand] = useState({ name: '', description: '', responseType: 'plain', response: '' });
+  const [commandOptions, setCommandOptions] = useState([]);
 
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
@@ -144,6 +149,8 @@ export default function Dashboard() {
 
   const sendDM = async () => {
     if (!selectedUser) return showNotification('Please select a user', 'error');
+    if (!dmMessage && !dmEmbed.enabled) return showNotification('Please enter a message', 'error');
+    
     setLoading(true);
     try {
       await apiRequest('/api/dm', 'POST', {
@@ -151,8 +158,18 @@ export default function Dashboard() {
         message: dmEmbed.enabled ? null : dmMessage,
         embed: dmEmbed.enabled ? dmEmbed : null
       });
-      showNotification('DM sent successfully!');
+      
+      // Add sent message to conversation
+      const newMessage = {
+        content: dmEmbed.enabled ? `[Embed: ${dmEmbed.title}]` : dmMessage,
+        type: 'sent',
+        timestamp: new Date().toISOString()
+      };
+      
+      setConversationMessages([...conversationMessages, newMessage]);
       setDmMessage('');
+      setDmEmbed({ enabled: false, title: '', description: '', color: '#000000', footer: '', image: '', thumbnail: '', fields: [] });
+      showNotification('DM sent successfully!');
     } catch (error) {
       showNotification('Failed to send DM', 'error');
     } finally {
@@ -162,15 +179,18 @@ export default function Dashboard() {
 
   const sendChannelMessage = async () => {
     if (!selectedChannel) return showNotification('Please select a channel', 'error');
+    if (!channelMessage && !channelEmbed.enabled) return showNotification('Please enter a message', 'error');
+    
     setLoading(true);
     try {
       await apiRequest('/api/channel/message', 'POST', {
-        userId: selectedChannel,
+        channelId: selectedChannel,
         message: channelEmbed.enabled ? null : channelMessage,
         embed: channelEmbed.enabled ? channelEmbed : null
       });
       showNotification('Message sent!');
       setChannelMessage('');
+      setChannelEmbed({ enabled: false, title: '', description: '', color: '#000000', footer: '', image: '', thumbnail: '', fields: [] });
     } catch (error) {
       showNotification('Failed to send message', 'error');
     } finally {
@@ -264,6 +284,54 @@ export default function Dashboard() {
       showNotification('Presence updated!');
     } catch (error) {
       showNotification('Failed to update presence', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadCustomCommands = async () => {
+    try {
+      const data = await apiRequest('/api/commands');
+      setCustomCommands(data);
+    } catch (error) {
+      console.error('Failed to load commands:', error);
+    }
+  };
+
+  const createCustomCommand = async () => {
+    if (!newCommand.name) return showNotification('Please enter command name', 'error');
+    if (!newCommand.description) return showNotification('Please enter command description', 'error');
+    if (!newCommand.response) return showNotification('Please enter command response', 'error');
+    
+    setLoading(true);
+    try {
+      await apiRequest('/api/commands/create', 'POST', {
+        name: newCommand.name,
+        description: newCommand.description,
+        options: commandOptions,
+        responseType: newCommand.responseType,
+        response: newCommand.responseType === 'embed' ? newCommand.response : newCommand.response
+      });
+      showNotification('Command created successfully!');
+      setNewCommand({ name: '', description: '', responseType: 'plain', response: '' });
+      setCommandOptions([]);
+      loadCustomCommands();
+    } catch (error) {
+      showNotification('Failed to create command', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteCustomCommand = async (commandName) => {
+    if (!confirm('Delete this command?')) return;
+    setLoading(true);
+    try {
+      await apiRequest(`/api/commands/${commandName}`, 'DELETE');
+      showNotification('Command deleted!');
+      loadCustomCommands();
+    } catch (error) {
+      showNotification('Failed to delete command', 'error');
     } finally {
       setLoading(false);
     }
@@ -489,8 +557,9 @@ export default function Dashboard() {
 
       <nav className="tabs">
         {[
-          { id: 'dm', label: 'Direct Messages' },
+          { id: 'dm', label: 'Send DM' },
           { id: 'channel', label: 'Channel Messages' },
+          { id: 'commands', label: 'Custom Commands' },
           { id: 'schedule', label: 'Schedule Messages' },
           { id: 'moderation', label: 'Moderation' },
           { id: 'bulk', label: 'Bulk Operations' },
@@ -505,10 +574,11 @@ export default function Dashboard() {
             className={`tab ${activeTab === tab.id ? 'active' : ''}`}
             onClick={() => {
               setActiveTab(tab.id);
-              // Only load data when user clicks the tab
+              // Load data when user clicks the tab
               if (tab.id === 'stats' && !stats) loadStats();
               if (tab.id === 'audit' && auditLogs.length === 0) loadAuditLogs();
               if (tab.id === 'schedule' && scheduledMessages.length === 0) loadScheduledMessages();
+              if (tab.id === 'commands' && customCommands.length === 0) loadCustomCommands();
             }}
           >
             {tab.label}
@@ -517,6 +587,7 @@ export default function Dashboard() {
       </nav>
 
       <main className="content">
+
         {activeTab === 'dm' && (
           <div className="panel">
             <div className="panel-header">
@@ -609,6 +680,22 @@ export default function Dashboard() {
               </Button>
             </div>
           </div>
+        )}
+
+        {activeTab === 'commands' && (
+          <CustomCommandsPanel
+            commands={customCommands}
+            newCommand={newCommand}
+            setNewCommand={setNewCommand}
+            commandOptions={commandOptions}
+            setCommandOptions={setCommandOptions}
+            createCommand={createCustomCommand}
+            deleteCommand={deleteCustomCommand}
+            loading={loading}
+            members={members}
+            channels={channels}
+            roles={roles}
+          />
         )}
 
         {activeTab === 'channel' && (
