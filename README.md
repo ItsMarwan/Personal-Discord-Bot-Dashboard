@@ -225,22 +225,6 @@ DASHBOARD_PASSWORD=your_secure_password
 2. Enter your username and password (from .env file)
 3. You'll see your server info at the top
 
-### DM Inbox Tab (1:1 Messaging)
-1. **View Conversations**:
-   - See list of all members you've messaged or who've messaged you
-   - Search conversations by username (fully searchable)
-   - Click on a conversation to open the chat thread
-
-2. **Message History**:
-   - View all messages sent and received
-   - See timestamps and message status
-   - Full embed and attachment support displayed
-
-3. **Track Responses**:
-   - See which messages received replies
-   - Response indicators show user engagement
-   - Auto-refresh for new incoming messages
-
 ### Send DM Tab
 1. Select a user from the dropdown (searchable)
 2. Choose between plain message or embed
@@ -346,7 +330,6 @@ DASHBOARD_PASSWORD=your_secure_password
 - ✅ **Schedule Date/Time Picker**: Fixed and fully functional for scheduling messages
 - ✅ **Bulk Operations Layout**: Removed unnecessary white space, improved UI spacing
 - ✅ **Color Picker**: Enhanced with circular selector and smooth drag-to-pick functionality
-- ✅ **DM Message Tracking**: Now fetches and displays all sent/received messages with response indicators
 
 ### Bot won't start
 - Check if bot token is correct
@@ -454,7 +437,6 @@ If you encounter issues:
 ## 🌟 Recently Added
 
 - [x] Custom slash command creator with full customization
-- [x] 1:1 Discord-like DM inbox interface
 - [x] Message tracking and response indicators
 - [x] Searchable dropdown menus throughout dashboard
 - [x] Fixed date/time scheduling picker
