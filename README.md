@@ -4,16 +4,6 @@ A comprehensive Discord bot with a powerful web dashboard for server management.
 
 ## ✨ Features
 
-### � DM Inbox (1:1 Messaging)
-- **Full Discord-like DM interface** for managing direct messages
-- View all conversations with server members
-- See message history (sent and received)
-- Track user responses in real-time
-- Search conversations by username
-- Message status indicators
-- Rich message formatting support
-- Auto-refresh for new messages
-
 ### 📬 Send DM Messages
 - Send direct messages to any server member
 - Full embed builder with customizable:
@@ -23,7 +13,6 @@ A comprehensive Discord bot with a powerful web dashboard for server management.
   - Custom fields (inline/non-inline)
 - Plain text or rich embed messages
 - Schedule messages with working date/time picker
-- Message delivery confirmation
 
 ### 📢 Channel Messages
 - Send messages to any text channel
